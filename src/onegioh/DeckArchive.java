@@ -5,6 +5,7 @@ import java.util.Map;
 
 public class DeckArchive {
 	
+	private static final String ASTERISCHI = "*********************";
 	private ArrayList<String> menu; 
 	private ArrayList<Map<Integer, Map<Integer, Card>>> deckArchive;
 	
@@ -27,8 +28,10 @@ public class DeckArchive {
 	 * stampa tutti i nomi dei deck presenti a sistema
 	 */
 	public void printDecksList() {
+		System.out.println(ASTERISCHI);
 		for (int i = 0; i < this.getMenu().size(); i++)
 			System.out.println((i+1) + "° " + this.getMenu().get(i));
+		System.out.println(ASTERISCHI);
 	}
 	/**
 	 * controlla se è presente un nome nella lista

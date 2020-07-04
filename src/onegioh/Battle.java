@@ -31,10 +31,7 @@ public class Battle {
 			boolean changeOrder = true;
 			for(int i = 0; i < hand.size() && i >= 0;) {
 				boolean changedLastCard = false;
-				if (changeOrder)
-					i++;
-				else
-					i--;
+				
 				//CONTROLLO SE IL DECK NON E' VUOTO
 				if (Deck.deckEmpty(deck))
 					Deck.resetDeck(hand, stack, choosenDeck);
@@ -52,23 +49,22 @@ public class Battle {
 						System.out.printf("%nColor on top ---> " + color + "<---%n");
 						changedLastCard = true;
 						Card lastCard = stack.getLast();
-						stack.getLast().setColor(Color.checkString(color));
-						if (nextMove(hand.get(i), stack)) {
+						Color nextColor;
+						do {
+							nextColor = Color.checkString(color);
+							if (nextColor == null) {
+								System.out.println("You must choose between: ");
+								for (Color c : Color.values())
+									System.out.printf("--> %s%n", c.toString() );
+							}
+						}while(nextColor == null);
+						stack.getLast().setColor(nextColor);
+						if (nextMove(hand.get(i-1), stack)) {
 							Card recentCard = stack.getLast();
 							stack.removeLast();
 							stack.removeLast();
 							stack.add(lastCard);
 							stack.add(recentCard);
-						}
-						else {
-							hand.get(i).add(Deck.getRandomCard(deck));
-							if (nextMove(hand.get(i), stack)) {
-								Card recentCard = stack.getLast();
-								stack.removeLast();
-								stack.removeLast();
-								stack.add(lastCard);
-								stack.add(recentCard);
-							}
 						}
 						if (stack.getLast().getValue().equals(Symbol.PESCAQUATTRO)) {
 							for (int j = 0; j < 4; j++)
@@ -105,8 +101,11 @@ public class Battle {
 				}
 				if (checkForAnEmptyHand(hand) != -1)
 					break;
-				
-				
+				if (changeOrder)
+					i++;
+				else
+					i--;
+
 			}
 		}while (checkForAnEmptyHand(hand) == -1);
 		System.out.printf("%n%nPlayer %d wins!!!%n%n", checkForAnEmptyHand(hand));
@@ -166,8 +165,15 @@ public class Battle {
 	 * @return true nel caso sia stato scartato qualcosa, false altrimenti
 	 */
 	public static boolean nextMove(ArrayList<Card> hand, Deque<Card> stack) {
-		Color color = stack.getLast().getColor();
-		Symbol value = stack.getLast().getValue();
+		Color color;
+		Symbol value;
+		ArrayList<Card> voidCards = new ArrayList<Card>();
+		do {
+			color = stack.getLast().getColor();
+			value = stack.getLast().getValue();
+			voidCards.add(stack.getLast());
+			stack.removeLast();
+		}while(color == null);
 		Card card = new Card(null, null, null);
 		int move;
 		for(;;) {
@@ -175,18 +181,20 @@ public class Battle {
 			move = InputDati.leggiIntero(CHOOSE_CARD_MESSAGE, 0, hand.size());
 			if (move == hand.size())
 				break;
-			else
+			else {
 				card = hand.get(move);
-			if (!card.getColor().equals(color) && !card.getValue().equals(value) && !card.getColor().equals(null))
-				System.out.println(INVALID_CARD_MESSAGE);
-			
+				if (!card.getColor().equals(color) && !card.getValue().equals(value))
+					System.out.println(INVALID_CARD_MESSAGE);
+			}
 			if (card.getColor().equals(color) || card.getValue().equals(value))
 				break;
 		}
 		if (move == hand.size())
 				return false;
 		else {
-			stack.add(card);
+			for (int i = 0; i< voidCards.size(); i++)
+				stack.addLast(voidCards.get(i));
+			stack.addLast(card);
 			hand.remove(card);
 			return true;
 		}
